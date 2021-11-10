@@ -2,11 +2,14 @@ from cloudshell.cp.core import DriverRequestParser
 from cloudshell.cp.core.models import DeleteSavedApp, DeployApp, DriverResponse, SaveApp
 from cloudshell.cp.core.utils import single
 from cloudshell.shell.core.resource_driver_interface import ResourceDriverInterface
-
+from cloudshell.api.cloudshell_api import InputNameValue
 from cloudshell.cp.vcenter.commands.command_orchestrator import CommandOrchestrator
 from cloudshell.cp.vcenter.common.vcenter.model_auto_discovery import (
     VCenterAutoModelDiscovery,
 )
+import json
+
+from cloudshell.api.cloudshell_api import CloudShellAPISession, ResourceAttributesUpdateRequest, AttributeNameValue
 
 
 class VMwarevCenterCloudProviderShell2GDriver(ResourceDriverInterface):
@@ -38,7 +41,37 @@ class VMwarevCenterCloudProviderShell2GDriver(ResourceDriverInterface):
         pass
 
     def ApplyConnectivityChanges(self, context, request):
-        return self.command_orchestrator.connect_bulk(context, request)
+        try:
+            api = CloudShellAPISession(context.connectivity.server_address, domain="Global",
+                                       token_id=context.connectivity.admin_auth_token)
+
+            aci_res_name = context.resource.attributes.get("Connectivity Provider", None) or context.resource.attributes.get(
+                "{}.Connectivity Provider".format(context.resource.model), None)
+            if not aci_res_name:
+                api.WriteMessageToReservationOutput(context.reservation.reservation_id,"regula vlan")
+                return self.command_orchestrator.connect_bulk(context, request)
+
+            else:
+
+                api.WriteMessageToReservationOutput(context.reservation.reservation_id,"ACI path")
+                resourcesList= api.FindResources(resourceFullName=aci_res_name)
+                if len(resourcesList.Resources) != 1:
+                    raise Exception("Could not find ACI Resource")
+                else:
+                    command_name = "Apply_ConnectivityChanges"
+
+                    commandInputs = [InputNameValue('request',request)]
+                    api.WriteMessageToReservationOutput(context.reservation.reservation_id, request)
+                    api.WriteMessageToReservationOutput(context.reservation.reservation_id, "resource found")
+                    res = api.ExecuteCommand(context.reservation.reservation_id,aci_res_name, 'Resource',command_name,
+                                       commandInputs, printOutput=True)
+
+                    return res
+
+                api.WriteMessageToReservationOutput(context.reservation.reservation_id,"after commad")
+        except Exception as e:
+            raise Exception("Unable to apply connectivity on vcneter shell. Error: {}".format(e.message))
+
 
     def disconnect_all(self, context, ports):
         return self.command_orchestrator.disconnect_all(context, ports)

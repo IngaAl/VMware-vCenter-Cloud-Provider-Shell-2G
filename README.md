@@ -83,6 +83,7 @@ The following table describes attributes that are unique to this shell and are n
 |OVF Tool Path|String|The path for the OVF tool installation. Use the same path for all execution servers|
 |Reserved Networks|String|Reserved networks separated by Semicolon(;), vNICs configured to those networks won't be used for VM connectivity|
 |Promiscuous Mode|Boolean|If enabled the port groups on the virtual switch will be configured to allow promiscuous mode|
+|Connectivity Provider|String|Hold the name of the connectivity provider if there any instead of using the default vlan flow|
 
 ### Automation
 This section describes the automation (driver) associated with the data model. The shell’s driver is provided as part of the shell package. There are two types of automation processes, Autoload and Resource. Autoload is executed when creating the resource in the **Inventory** dashboard.

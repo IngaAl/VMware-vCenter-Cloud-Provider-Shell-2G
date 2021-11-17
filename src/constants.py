@@ -1,0 +1,3 @@
+COMMAND_NAME = "ApplyConnectivityChanges"
+
+

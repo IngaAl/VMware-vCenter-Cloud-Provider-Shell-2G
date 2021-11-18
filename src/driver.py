@@ -57,12 +57,10 @@ class VMwarevCenterCloudProviderShell2GDriver(ResourceDriverInterface):
                     logger.info("Found connectivity provider attribute :{}".format(Connectivity_res_name))
                     resourcesList= api.FindResources(resourceFullName=Connectivity_res_name)
                     if len(resourcesList.Resources) != 1:
-                        self._handle_exception_logging(logger,"Could not find connectivity provider resoruce name matches to attribute")
+                        self._handle_exception_logging(logger,"Could not find connectivity provider resource name matches to attribute")
 
                     else:
                         logger.info("Found connectivity provider resource :{}".format(Connectivity_res_name))
-                        api.WriteMessageToReservationOutput(context.reservation.reservation_id,
-                                                            "Found connectivity provider resource :{}".format(Connectivity_res_name))
                         command_name = COMMAND_NAME
                         commandInputs = [InputNameValue('request',request)]
                         res = api.ExecuteCommand(context.reservation.reservation_id,Connectivity_res_name, 'Resource',command_name,
@@ -242,4 +240,4 @@ class VMwarevCenterCloudProviderShell2GDriver(ResourceDriverInterface):
 
     def _handle_exception_logging(self, logger, msg):
         logger.exception(msg)
-        raise ValueError(msg)
+        raise
